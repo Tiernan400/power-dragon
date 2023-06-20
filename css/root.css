@@ -1,0 +1,52 @@
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background-colour: #202020;
+        --focused-colour: #19191b;
+        --text-colour: #ffffff;
+        --lining-colour: #007acc;
+        --light-lining-colour: #0090f2;
+    }
+}
+@media (prefers-color-scheme: light) {
+    :root {
+        --background-colour: #f3f3f3;
+        --focused-colour: #ffffff;
+        --text-colour: #000000;
+        --lining-colour: #7F00FF;
+        --light-lining-colour: #a100ff;
+    }
+}
+:root {
+    --default-font: 'Segoe UI';
+}
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-thumb { background: var(--lining-colour); border-radius: 10px;}
+::-webkit-scrollbar-thumb:hover { background: var(--light-lining-colour); }
+h1, h2, h3, h4, h5, h6 { font-weight: 100; }
+hr { border: 1px solid var(--lining-colour); background: var(--lining-colour); }
+select {
+    color: var(--text-colour);
+    background: var(--background-colour);
+}
+canvas {
+    position: fixed;
+    z-index: 99999;
+    top: 0;
+    left: 0;
+}
+button {
+    color: white;
+    background: var(--lining-colour);
+    border: 1px solid var(--lining-colour);
+    font-size: 20px;
+    margin: 5px;
+} button:disabled { opacity: 0.5; cursor: default; }
+a {
+    text-decoration: none;
+    color: white;
+    background: var(--lining-colour);
+    border: 1px solid var(--lining-colour);
+    font-size: 20px;
+    margin: 5px;
+    cursor: pointer;
+}

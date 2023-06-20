@@ -1,0 +1,300 @@
+@import url('root.css');
+.heading {
+    border-top: 1px dotted var(--lining-colour);
+    border-bottom: 1px dotted var(--lining-colour);
+    text-align: center;
+}
+html, body {
+    background: var(--focused-colour);
+    color: var(--text-colour);
+    height: 100%;
+    width: 100%;
+}
+body {
+    margin: 0;
+    font-family: var(--default-font);
+    display: flex;
+    flex-direction: column;
+}
+.overlay {
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+    align-items: center;
+}
+.boat {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 90%;
+    border: 2px solid var(--text-colour);
+    background-image: linear-gradient(to bottom, var(--text-colour) 2px, transparent 1px);
+    background-size: 100% 10.1%;
+    background-position-y: -2px;
+    border-radius: 50%;
+    line-height: 0;
+}
+.boat > .part {
+    position: relative;
+    z-index: -1;
+    height: 10%;
+    width: 100%;
+    display: block;
+}
+.stats-left, .stats-right {
+    border: 2px solid var(--lining-colour);
+    border-radius: 5px;
+    position: absolute;
+    top: 5%;
+    width: 20%;
+    height: 90%;
+}
+.stats-left { left: 3%; }
+.stats-right { right: 3%; }
+.stats-left > h1, .stats-right > h1 {
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--lining-colour);
+}
+.stats-left span.offset, .stats-right span.offset {
+    position: relative;
+    color: red;
+    margin: 10px;
+    font-size: 25px;
+    float: right;
+}
+#alt-div { line-height: 0; }
+#alt-div > div {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px inset var(--background-colour);
+    background: var(--focused-colour);
+    color: var(--text-colour);
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
+#btn-capture {
+    cursor: pointer;
+    width: 100%;
+    margin: 0;
+}
+#btn-share {
+    width: 100%;
+    margin: 0;
+    cursor: pointer;
+}
+.label {
+    position: absolute;
+    transform: translateY(-100%);
+    font-size: 20px;
+    margin: 5px;
+}
+.label > span {
+    border: 1px solid var(--lining-colour);
+    color: var(--lining-colour);
+    border-radius: 50%;
+    display: inline-flex;
+    justify-content: center;
+    align-content: center;
+    font-size: 20px;
+    margin: 4px;
+    padding-left: -2px;
+    padding-top: 2px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+}
+.label > b { font-weight: 100; }
+.label > b.active { text-decoration: underline; }
+nav {
+    background: var(--background-colour);
+    color: var(--text-colour);
+    height: 40px;
+    display: block;
+    user-select: none;
+    font-family: var(--default-font);
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    font-size: 0px;
+}
+nav::-webkit-scrollbar { height: 5px; }
+nav > .tab {
+    background: var(--background-colour);
+    border-right: 2px solid var(--focused-colour);
+    display: inline-block;
+    height: 30px;
+    padding: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 22px;
+    margin-right: 5px;
+} nav > .tab:hover { background: var(--focused-colour); }
+nav > .tab.focused {
+    background: var(--focused-colour);
+    cursor: default;
+}
+main {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+main > content {
+    display: none;
+    height: 100%;
+    position: relative;
+    -webkit-animation-name: fadeIn;
+    -webkit-animation-duration: 0.6s;
+    animation-name: fadeIn;
+    animation-duration: 0.6s;
+}
+main > content.focused {
+    display: block;
+}
+div.section {
+    border-top: 2px solid var(--lining-colour);
+    margin-bottom: 5px;
+}
+div.section > b {
+    background: var(--lining-colour);
+    border: 1px solid var(--lining-colour);
+    border-right: 20px solid var(--lining-colour);
+    border-bottom: 20px solid var(--lining-colour);
+    border-bottom-right-radius: 100%;
+    font-size: 20px;
+}
+div.section > div {
+    margin: 5px;
+}
+iframe {
+    width: 100%;
+    height: calc(100% - 4px);
+    border: none;
+}
+.title {
+    font-size: 50px;
+    text-align: center;
+    font-weight: 100;
+}
+.list-container {
+    overflow-y: auto;
+    background: var(--focused-colour);
+    border: 1px solid var(--lining-colour);
+    width: 80%;
+    margin: auto;
+    height: calc(100% - 150px);
+}
+.list-container > .list-header {
+    position: sticky;
+    top: 0;
+    background: var(--focused-colour);
+    font-size: 20px;
+    border-bottom: 1px dashed var(--lining-colour);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+.list-container > .list-header > span {
+    width: calc(100% / 5 - 5px);
+    display: inline-block;
+    text-align: center;
+}
+#list > div { cursor: default; }
+#list > div:hover { background: var(--background-colour); }
+#list > div > span { width: calc(100% / 5 - 5px); display: inline-block; text-align: center; }
+#btn-add {
+    width: calc(80% + 2px);
+    display: block;
+    margin: auto;
+    margin-top: 10px;
+    cursor: pointer;
+}
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4);
+    -webkit-animation-name: fadeIn;
+    -webkit-animation-duration: 0.4s;
+    animation-name: fadeIn;
+    animation-duration: 0.4s;
+}
+
+/* Modal Content */
+.modal-content {
+    background: var(--background-colour);
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    -webkit-animation-name: slideIn;
+    -webkit-animation-duration: 0.4s;
+    animation-name: slideIn;
+    animation-duration: 0.4s
+}
+.close {
+    color: white;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+.modal-header {
+    padding: 2px 16px;
+    text-align: center;
+    background-color: var(--lining-colour);
+    color: white;
+}
+.modal-body { padding: 2px 16px; text-align: center; }
+.modal-body1 {
+    position: relative;
+    height: calc(100% - 80px);
+}.modal-body1 > a {
+    display: block;
+    margin: auto;
+}
+.modal-body1 > img {
+    max-width: 100%;
+    max-height: calc(100% - 100px);
+    height: auto;
+    width: auto;
+}.modal-body1 > a { margin-bottom: 10px; }
+
+/* Add Animation */
+@-webkit-keyframes slideIn {
+    from {bottom: -300px; opacity: 0}
+    to {bottom: 0; opacity: 1}
+}
+@keyframes slideIn {
+    from {bottom: -300px; opacity: 0}
+    to {bottom: 0; opacity: 1}
+}
+@-webkit-keyframes fadeIn {
+    from {opacity: 0}
+    to {opacity: 1}
+}
+@keyframes fadeIn {
+    from {opacity: 0} 
+    to {opacity: 1}
+}

@@ -3,29 +3,126 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/main.css">
-    <title>Cydli</title>
+    <title>Power Dragon</title>
   </head>
   <body>
     <nav>
-        <div class="nav-controls">
-            <button title="Minimise" class="minimise" onclick="win.minimise()"></button>
-            <button title="Maximise" class="maximise" id="btn-max" onclick="win.maximise(this)"></button>
-            <button title="Close" class="close" onclick="win.close()"></button>
-        </div>
-        <div class="tab focused" linked="home" onclick="tab(this)">Home</div>
+        <div class="tab focused" linked="balancer" onclick="tab(this)">Balancer</div>
+        <div class="tab" linked="weights" onclick="tab(this)" id="weight-tab">Weights</div>
         <div class="tab" linked="settings" onclick="tab(this)">Settings</div>
     </nav>
     <main>
-        <content id="home" class="focused">
-            <div class="cydli-title">Cydli</div>
-            <button onclick="remote.getCurrentWebContents().openDevTools()">Open Developer Tools</button>
-            <button onclick="window.location.reload()">Reload</button>
-            <button onclick="newAnalysis();">New Analysis</button>
-            <button onclick="newPosExplorer();">Position Explorer</button>
+        <content id="balancer" class="focused">
+            <div id="add-modal1" class="modal">
+                <div class="modal-content" style="height: 100%;">
+                    <div class="modal-header">
+                        <span class="close" id="modal-close1">&times;</span>
+                        <h2>Screenshot Captured</h2>
+                    </div>
+                    <div class="modal-body modal-body1">
+                        <img id="screenshot-img"/>
+                        <a id="save-screenshot">Save as Image</a>
+                        <button onclick="shareImg()" id="btn-share">Share to Device</button>
+                    </div>
+                </div>
+            </div>
+            <div class="overlay">
+                <h1 style="font-size:50px;margin-bottom:80px;">Balance Boat</h1>
+                <button id="begin-btn" style="width:30%;cursor:pointer;" onclick="startAlg();">Start Now</button>
+            </div>
+            <div id="boat-container" style="height:100%;background:var(--focused-colour);">
+                <div class="boat">
+                    <div class="part"></div>
+                    <div class="part"></div>
+                    <div class="part"></div>
+                    <div class="part"></div>
+                    <div class="part"></div>
+                    <div class="part"></div>
+                    <div class="part"></div>
+                    <div class="part"></div>
+                    <div class="part"></div>
+                    <div class="part"></div>
+                </div>
+                <div class="label"><span>1</span><b></b></div>
+                <div class="label"><span>2</span><b></b></div>
+                <div class="label"><span>3</span><b></b></div>
+                <div class="label"><span>4</span><b></b></div>
+                <div class="label"><span>5</span><b></b></div>
+                <div class="label"><span>6</span><b></b></div>
+                <div class="label"><span>7</span><b></b></div>
+                <div class="label"><span>8</span><b></b></div>
+                <div class="label"><span>9</span><b></b></div>
+                <div class="label"><span>10</span><b></b></div>
+                <div class="label"><span>11</span><b></b></div>
+                <div class="label"><span>12</span><b></b></div>
+                <div class="label"><span>13</span><b></b></div>
+                <div class="label"><span>14</span><b></b></div>
+                <div class="label"><span>15</span><b></b></div>
+                <div class="label"><span>16</span><b></b></div>
+                <div class="label"><span>17</span><b></b></div>
+                <div class="label"><span>18</span><b></b></div>
+                <div class="label"><span>19</span><b></b></div>
+                <div class="label"><span>20</span><b></b></div>
+            </div>
+            <div class="stats-left">
+                <h1>Left Side</h1>
+                <div>Total Weight: <span id="left-total"></span>kg</div>
+                <div>Percent of Weight: <span id="left-percent"></span>%</div>
+                <span id="left-offset" class="offset"></span>
+                <div style="position:absolute;bottom:0;width:100%;">
+                    <h3 class="heading" style="margin-bottom:0;">Alternatives</h3>
+                    <div id="alt-div" style="border-bottom:1px dotted var(--lining-colour);height:200px;overflow-y:auto;"></div>
+                    <button id="btn-capture" onclick="capture()">Capture Boat</button>
+                </div>
+            </div>
+            <div class="stats-right">
+                <h1>Right Side</h1>
+                <div>Total Weight: <span id="right-total"></span>kg</div>
+                <div>Percent of Weight: <span id="right-percent"></span>%</div>
+                <span id="right-offset" class="offset"></span>
+            </div>
+        </content>
+        <content id="weights">
+            <div style="position:absolute;width:100%;height:100%;">
+                <h1 style="text-align:center;">Edit Algorithm Configuration</h1>
+                <div class="list-container">
+                    <div class="list-header">
+                        <span>NAME</span>
+                        <span>WEIGHT (kg)</span>
+                        <span>SIDE</span>
+                        <span>ACTIVE <input type="checkbox" id="select-all"></span>
+                        <span>ACTIONS</span>
+                    </div>
+                    <div id="list"></div>
+                </div>
+                <button onclick="addPerson();" id="btn-add">Add</button>
+            </div>
+            <div class="modal" id="add-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <span class="close" id="modal-close">&times;</span>
+                        <h2>Add Person to Algorithm</h2>
+                    </div>
+                    <div class="modal-body">
+                        Name: <input id="new-name" type="text"/><br><br>
+                        Weight (in kilograms): <input id="new-weight" type="number"/><br><br>
+                        Side:
+                        <dropdown id="new-dropdown" value="any">
+                            <span>Select Side</span>
+                            <ul>
+                                <li onclick="this.parentElement.parentElement.setAttribute('value', 'any')">Any</li>
+                                <li onclick="this.parentElement.parentElement.setAttribute('value', 'right')">Right</li>
+                                <li onclick="this.parentElement.parentElement.setAttribute('value', 'left')">Left</li>
+                            </ul>
+                        </dropdown><br><br>
+                        <button onclick="addPerson(true);">Submit</button><br><br>
+                    </div>
+                </div>
+            </div>
         </content>
         <content id="settings">
             <div style="width:100%;height:100%;display:flex;flex-direction:column;">
-                <h1 style="text-align:center;">Cydli Chess Interface</h1>
+                <h1 style="text-align:center;">Balancing Algorithm Interface</h1>
                 <div style="display:flex;flex-grow:1;">
                     <div style="width:70%;">
                         <div class="section">
@@ -48,21 +145,29 @@
                                     ><opt scolor="red" sbgcolor="#292a2d">Disabled</opt>
                                 </switch>
                             </div>
-                        </div>
-                        <div class="section">
-                            <b>Engine Configuration</b><br><br>
                             <div>
-                                Engine: <span id="engine-id"></span><br>
-                                <input type="file" id="set-engine"/>
+                                Run Static Server to Share Files <i style="color:red;">*experimental</i>:
+                                <switch id="switch-server" fsize="18px">
+                                    <opt scolor="chartreuse" sbgcolor="#292a2d">Enabled</opt
+                                    ><opt scolor="red" sbgcolor="#292a2d">Disabled</opt>
+                                </switch>
+                            </div>
+                            <div>
+                                Enable Hardware Acceleration:
+                                <switch id="switch-hardware-acceleration" onswitch="updateSettings('personalisation', 'enableHardwareAcceleration', !this.vl, true, true);" fsize="18px">
+                                    <opt scolor="chartreuse" sbgcolor="#292a2d">Enabled</opt
+                                    ><opt scolor="red" sbgcolor="#292a2d">Disabled</opt>
+                                </switch>
                             </div>
                         </div>
                         <div class="section">
                             <b>Versions</b><br><br>
                             <div>
-                                Cydli <span id="cydli-version">1.0.7</span><br>
+                                Power Dragon: <span id="balancer-version">1.3</span><br>
                                 Node.js: <span id="node-version"></span><br>
                                 Chromium: <span id="chrome-version"></span><br>
-                                Electron: <span id="electron-version"></span>
+                                Electron: <span id="electron-version"></span><br>
+                                System: <span id="system-version"></span>
                             </div>
                         </div>
                     </div>
@@ -73,161 +178,101 @@
             </div>
         </content>
     </main>
-    <script src="js/prototype.min.js"></script>
-    <script src="js/functions.min.js"></script>
+    <script src="js/menu.min.js"></script>
+    <script src="js/html2canvas.min.js"></script>
     <script src="js/dropdown.min.js"></script>
     <script src="js/switch.min.js"></script>
+    <script src="js/capture.min.js"></script>
+    <script src="js/functions.min.js"></script>
+    <script src="js/weights.min.js"></script>
+    <script src="js/ui.min.js"></script>
+    <script src="js/boat.min.js"></script>
+    <script src="js/algorithm.min.js"></script>
     <script type="text/javascript">
-        const menu = new Menu()
-        window.settings = JSON.parse(file.get(PATH.settings));
-        if (settings.engine.use != "none" && settings.engine[settings.engine.use].location == "") {
-            settings.engine.use = "none";
-            file.put(PATH.settings, JSON.stringify(settings));
+        let optimal = {};
+        let boatPos = []
+        for (let i = 0; i < parseInt(settings.boat.seats, 10) * 2; i++) {
+            boatPos.push('SPACE')
         }
-        document.getElementById('engine-id').innerHTML = settings.engine.use.capitaliseFirstLetter()
-        if (settings.personalisation.startMaximised == false) {
-            document.getElementById('switch-maximise').click();
-        }
-        document.getElementById('theme-span').innerHTML = settings.personalisation.theme.capitaliseFirstLetter() + " <span style='float:right;'>&blacktriangledown;</span>";
-        function updateSettings(section, setting, value, restartRequired, convert2Bool) {
-            if (section && setting) {
-                if (convert2Bool) value = value?true:false;
-                settings[section][setting] = value;
-                if (restartRequired) alert('A restart is required for all changes to take effect')
-                if (setting == 'theme') {
-                    document.getElementById('theme-span').innerHTML = value.capitaliseFirstLetter() + " <span style='float:right;'>&blacktriangledown;</span>";
-                    ipcRenderer.send('set-theme', value)
-                }
-            }
-            file.put(PATH.settings, JSON.stringify(settings));
-        }
-        document.getElementById('set-engine').addEventListener('change', function(e) {
-            settings.engine[settings.engine.use].location = e.target.files[0].path
-            updateSettings()
-        })
-        onmessage = function(ev) {
-            if (ev.data.to == 'engine') {
-                var a = ev.data.params
-                a.unshift('"'+ev.source.name+'"')
-                var s = 'e[ev.data.function]('+a.join(', ')+')';
-                s = s.replace(/\\/g, '\\\\')
-                eval(s)
-            }
-        }
-        e.onoutput = function(from, output) {
-            var f = document.getElementById(from.replace('analysis', ''));
-            f = f.getElementsByTagName('iframe')[0];
-            var w = f.contentWindow;
-            w.postMessage({
-                subject: 'engine-output',
-                content: output
-            });
-        }
-        function newTitle(title) {
-            ipcRenderer.send('set-title', title)
-        }
-        menu.append(new MenuItem ({
-            label: 'Engine',
-            submenu: [
-                new MenuItem({
-                    label: 'Off',
-                    id: 'engine-off',
-                    type: 'checkbox',
-                    click() {
-                        setEngine('off');
+        let moving = -1;
+        for (let i = 0; i < getClass('label').length; i++) {
+            var cur = getClass('label')[i].getTag('span')[0]
+            cur.addEventListener('click', (e) => {
+                if (moving == -1) {
+                    var cpath = e.composedPath()
+                    var label = cpath[0].parentElement;
+                    label.getTag('b')[0].classList = 'active';
+                    moving = Array.from(getClass('label')).indexOf(label)
+                } else {
+                    var cpath = e.composedPath()
+                    var label = cpath[0].parentElement;
+                    var tb = label.getTag('b')[0]
+                    var thisIndex = Array.from(getClass('label')).indexOf(label)
+                    var origEl = getClass('label')[moving]
+                    var ob = origEl.getTag('b')[0]
+                    if (thisIndex == moving) {
+                        origEl.getTag('b')[0].classList = '';
+                        moving = -1;
+                        return;
                     }
-                }),
-                new MenuItem({type: 'separator'}),
-                new MenuItem({
-                    label: 'Stockfish',
-                    id: 'engine-stockfish',
-                    type: 'checkbox',
-                    click() {
-                        setEngine('stockfish')
+                    if (thisIndex % 2 != moving % 2) {
+                        origEl.getTag('b')[0].classList = '';
+                        alert('You cannot move people to the other side of the boat')
+                        moving = -1;
+                        return;
                     }
-                }),
-                new MenuItem({
-                    label: 'Zelpha',
-                    id: 'engine-zelpha',
-                    type: 'checkbox',
-                    click() {
-                        setEngine('zelpha')
-                    }
-                })
-            ]
-        }))
-        menu.append(new MenuItem({type: 'separator'}))
-        menu.append(new MenuItem({
-            role: 'Reload'
-        }))
-        menu.append(new MenuItem ({
-            role: 'toggleDevTools'
-        }))
-        window.addEventListener('contextmenu', (e) => {
-            e.preventDefault()
-            menu.popup(remote.getCurrentWindow())
-        }, false)
-
-        function setEngine(e) {
-                menu.getMenuItemById('engine-off').checked = false;
-                menu.getMenuItemById('engine-stockfish').checked = false;
-                menu.getMenuItemById('engine-zelpha').checked = false;
-                menu.getMenuItemById('engine-'+e).checked = true;
-                settings.engine.use = e.replace('off', 'none')
-                updateSettings()
-                if (e != "off" && settings.engine[e].location == "") {
-                    alert('A path to the '+e+' engine is not defined. Please specify its location.')
+                    boatPos.swap(moving, thisIndex)
+                    ob.classList = '';
+                    ob.innerText = (boatPos[moving]=='SPACE')?'SPACE':`${boatPos[moving].n} (${boatPos[moving].w}kg)`;
+                    tb.innerText = (boatPos[thisIndex]=='SPACE')?'SPACE':`${boatPos[thisIndex].n} (${boatPos[thisIndex].w}kg)`;
+                    moving = -1;
                 }
-                document.getElementById('engine-id').innerHTML = settings.engine.use.capitaliseFirstLetter()
+            })
         }
-        menu.getMenuItemById("engine-"+settings.engine.use.replace("none", "off")).checked = true;
-
-        function tab(el) {
-            if (!el.classList.contains('focused')) {
-                for (let i = 0; i < document.getElementsByClassName('tab').length; i++) {
-                    document.getElementsByClassName('tab')[i].classList = 'tab';
-                }
-                el.classList.toggle('focused');
-                for (let i = 0; i < document.getElementsByTagName('content').length; i++) {
-                    document.getElementsByTagName('content')[i].style.display = 'none';
-                }
-                document.getElementById(el.getAttribute('linked')).style.display = 'block';
-                var t = el.getAttribute('linked');
-                if (parseInt(t)) {
-                    t = 'Analysis '+t;
-                }
-                newTitle("Cydli - "+t.capitaliseFirstLetter())
+        function startAlg() {
+            get('begin-btn').disabled = true;
+            for (let i = 0; i < parseInt(settings.boat.seats, 10) * 2; i++) {
+                boatPos[i] = 'SPACE';
             }
-        }
-        var games = 0;
-        var posExplorers = 0;
-        function newAnalysis() {
-            games += 1;
-            var el = document.createElement('div');
-            el.classList = 'tab';
-            el.setAttribute('linked', games.toString());
-            el.innerHTML = `Analysis${games==1?'':' '+games}`;
-            el.onclick = function() {tab(this)};
-            var newContent = document.createElement('content');
-            newContent.id = games.toString();
-            newContent.innerHTML = '<iframe src="analysis.html"/>';
-            document.getElementsByTagName('nav')[0].appendChild(el);
-            document.getElementsByTagName('main')[0].appendChild(newContent);
-            tab(el);
-        }
-        function newPosExplorer() {
-            posExplorers += 1;
-            var el = document.createElement('div');
-            el.classList = 'tab';
-            el.setAttribute('linked', 'position Explorer '+posExplorers.toString());
-            el.innerHTML = `Position Explorer${posExplorers==1?'':' '+posExplorers}`;
-            el.onclick = function() {tab(this)};
-            var newContent = document.createElement('content');
-            newContent.id = 'position Explorer '+posExplorers.toString();
-            newContent.innerHTML = '<iframe src="posExplorer.html"/>';
-            document.getElementsByTagName('nav')[0].appendChild(el);
-            document.getElementsByTagName('main')[0].appendChild(newContent);
-            tab(el);
+            sortLabels()
+            var b = algorithm.balance(weights, parseInt(settings.boat.seats, 10))
+            if (b == 'odd' || b == 'seats') {
+                if (b == 'odd') alert('The algorithm cannot balance if there is an odd quantity of people', 'error')
+                else alert('Not enough seats on the boat', 'error')
+                get('begin-btn').disabled = false;
+                return false
+            }
+            for (let i = 0; i < settings.boat.seats * 2; i++) {
+                getClass('label')[i].getTag('b')[0].innerText = 'SPACE';
+            }
+            for (let i = 0; i < b.closest.left.length; i++) {
+                getClass('label')[i * 2].getTag('b')[0].innerText = b.closest.left[i].n+' ('+b.closest.left[i].w+'kg)';
+                boatPos[i * 2] = b.closest.left[i]
+            }
+            for (let i = 0; i < b.closest.right.length; i++) {
+                getClass('label')[i * 2 + 1].getTag('b')[0].innerText = b.closest.right[i].n+' ('+b.closest.right[i].w+'kg)';
+                boatPos[i * 2 + 1] = b.closest.right[i]
+            }
+            get('left-total').innerText = b.closest.totals[0];
+            get('left-percent').innerText = b.closest.leftPercent.toString().substring(0, 5);
+            get('right-total').innerText = b.closest.totals[1];
+            get('right-percent').innerText = b.closest.rightPercent.toString().substring(0, 5);
+            if (b.closest.balance > 0) {
+                var percent = (b.closest.leftPercent - b.closest.rightPercent).toString().substring(0, 4);
+                get('right-offset').innerText = '';
+                get('left-offset').innerHTML = '+' + percent + '%<br>+' + b.closest.diff + 'kg';
+            } else {
+                var percent = (b.closest.rightPercent - b.closest.leftPercent).toString().substring(0, 4);
+                get('left-offset').innerText = '';
+                get('right-offset').innerHTML = '+' + percent + '%<br>+' + b.closest.diff + 'kg';
+            }
+            get('alt-div').innerText = '';
+            for (let i = 0; i < b.alternatives.length; i++) {
+                get('alt-div').innerHTML += `<div onmouseover="tempBoat(${i})" onmouseout="tempBoat('return')" onclick="swap(${i})">${i + 1}</div>`;
+            }
+            get('balancer').getElementsByClassName('overlay')[0].style.display = 'none';
+            get('begin-btn').disabled = false;
+            optimal = b;
         }
    </script>
   </body>
