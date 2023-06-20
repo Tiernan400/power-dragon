@@ -1,0 +1,1 @@
+{"engine":{"use":"stockfish","stockfish":{"threads":1,"depth":60,"location":"C:\\Users\\tiern\\AppData\\Local\\Programs\\Stockfish\\stockfish_15_x64_avx2.exe"},"zelpha":{"depth":20,"location":""}},"personalisation":{"theme":"system","startMaximised":false}}

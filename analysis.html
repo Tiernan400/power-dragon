@@ -1,0 +1,523 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="css/root.css">
+        <link rel="stylesheet" href="chessboard/main.css">
+        <link rel="stylesheet" href="css/chessboard-arrows.css">
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <style>
+            .noselect {
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                user-select: none;
+            }
+            body {
+                font-family: var(--default-font);
+                background: var(--focused-colour);
+                color: var(--text-colour);
+            }
+            @-webkit-keyframes slideIn {
+                from {transform: scaleY(0); opacity: 0;}
+                to {transform: scaleY(1); opacity: 1}
+            }
+            @keyframes slideIn {
+                from {transform: scaleY(0); opacity: 0;}
+                to {transform: scaleY(1); opacity: 1;}
+            }
+            main {
+                display: flex;
+                justify-content: space-evenly;
+            }
+            .eval-bar {
+                position: relative;
+                height: 100%;
+                width: 20px;
+                background: #202020;
+                margin-top: 9px;
+                margin-bottom: 9px;
+                border-radius: 3px;
+                overflow: hidden;
+                font-size: 10px;
+            }
+            .eval-bar > .eval-level {
+                background: var(--eval-colour);
+                position: absolute;
+                bottom: 0px;
+                left: 0;
+                height: 50%;
+                width: 100%;
+                transition: all 0.6s linear;
+            }
+            .eval-bar > .white {
+                position: absolute;
+                bottom: 5px;
+                color: #808080;
+                width: 100%;
+                display: inline-block;
+                text-align: center;
+            }
+            .eval-bar > .black {
+                position: absolute;
+                top: 5px;
+                color: #c3c3c3;
+                width: 100%;
+                display: inline-block;
+                text-align: center;
+            }
+            .board-display {
+                height: 100%;
+            }
+            .technical {
+                flex-grow: 0.8;
+                display: flex;
+                max-width: 50%;
+            }
+            .down-flex {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+            }
+            .container {
+                background: var(--background-colour);
+                border-radius: 5px;
+                width: 100%;
+                margin: 7px;
+            }
+            .reveal > span {
+                cursor: pointer;
+                font-size: 20px;
+            }.reveal > span > span {
+                display: inline-block;
+                transform: rotate(-90deg);
+                transition: 0.2s linear;
+            }
+            .reveal > div {
+                display: none;
+                margin-left: 30px;
+                -webkit-animation-name: slideIn;
+                -webkit-animation-duration: 0.2s;
+                animation-name: slideIn;
+                animation-duration: 0.2s;
+                transition: opacity 0.2s;
+            }
+            #player {
+                height: 80px;
+                white-space: nowrap;
+                font-size: 0px;
+                margin-top: 0px;
+            }
+            #player button {
+                background: var(--background-colour);
+                color: var(--text-colour);
+                border: none;
+                cursor: pointer;
+                margin: 0;
+                width: calc( 100% / 4 );
+                font-size: 20px;
+                height: 100%;
+                transition: all 0.2s linear;
+            }#player button:hover { background: var(--darker-colour); }
+            #player button:first-of-type { border-top-left-radius: 5px; border-bottom-left-radius: 5px; }
+            #player button:last-of-type { border-top-right-radius: 5px; border-bottom-right-radius: 5px; }
+            #board-container {
+                flex-grow: 1;
+                position: relative;
+            }
+            #analysis {
+                height: 100%;
+            }
+            .resizable { height: 200px; position: relative; }
+            #analysis-container {
+                padding-left: 10px;
+                font-family: monospace;
+                overflow-y: auto;
+                max-height: 100%;
+                font-size: 15px;
+            }
+            .grip {
+                position: absolute;
+                bottom: -3px;
+                background-color: var(--light-lining-colour);
+                height: 3px;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div class="eval-bar">
+                <div class="eval-level"></div>
+                <span id="eval-signifier"></span>
+            </div>
+            <div class="board-display">
+                <div class="down-flex">
+                    <div class="container" id="board-container">
+                        <canvas id="primary-canvas"></canvas>
+                        <canvas id="drawing-canvas"></canvas>
+                        <div id="board1"></div>
+                    </div>
+                    <div class="container" id="player">
+                        <button onclick="game_instance.undo()"><</button>
+                        <button onclick="game_instance.flip()">Flip</button>
+                        <button onclick="game_instance.reset()">Reset</button>
+                        <button>></button>
+                    </div>
+                </div>
+            </div>
+            <div class="technical">
+                <div class="down-flex">
+                    <div class="container" id="analysis">
+                        <span id="engine-string" style="padding-left:10px;font-family:monospace;"></span>
+                        <div class="resizable">
+                            <div id="analysis-container"></div>
+                            <div class="grip ui-resizable-handle ui-resizable-s"></div>
+                        </div>
+                        <div class="container">
+                            <button onclick="engine.stop()">Stop Engine</button>
+                            <div class="reveal">
+                                <span class="noselect">Engine Stats <span>&blacktriangledown;</span></span>
+                                <div>
+                                    Best Move: <int id="bestmove"></int><br>
+                                    Eval: <int id="eval"></int><br>
+                                    Depth: <int id="depth"></int><br>
+                                    Time: <int id="time"></int><br>
+                                    Nodes per Second: <int id="nps"></int><br>
+                                    Total Positions Evaluated: <int id="nodes"></int>
+                                </div>
+                            </div>
+                            <div class="reveal">
+                                <span class="noselect">Engine Configuration <span>&blacktriangledown;</span></span>
+                                <div>
+                                    <div>
+                                        Engine Threads
+                                        <input type="number" id="engine-threads">
+                                    </div>
+                                    <div>
+                                        Playing Engine Depth
+                                        <input type="number" id="playing-depth"><br>
+                                    </div>
+                                    <div>
+                                        Analysis Depth
+                                        <input type="number" id="analysis-depth">
+                                    </div>
+                                    <div style="margin-top:10px;margin-bottom:10px;">
+                                        Automate White:
+                                        <switch id="engine-white" onswitch="engine.playForWhite = this.vl" fsize="15px">
+                                            <opt scolor="red" sbgcolor="#292a2d">Disabled</opt
+                                            ><opt scolor="chartreuse" sbgcolor="#292a2d">Enabled</opt>
+                                        </switch>
+                                    </div>
+                                    <div>
+                                        Automate Black:
+                                        <switch id="engine-black" onswitch="engine.playForBlack = this.vl" fsize="15px">
+                                            <opt scolor="red" sbgcolor="#292a2d">Disabled</opt
+                                            ><opt scolor="chartreuse" sbgcolor="#292a2d">Enabled</opt>
+                                        </switch>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <script src="js/prototype.min.js"></script>
+        <script src="./js/jquery.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        <script src="./chessboard/js/main.js"></script>
+        <script src="./js/chess.min.js"></script>
+        <script src="./js/chessboard-arrows.min.js"></script>
+        <script src="./js/switch.min.js"></script>
+        <script>
+            if (parent == self) window.close()
+            else window.name = 'analysis' + parent.games
+            window.onbeforeunload = function() {
+                parent.postMessage({
+                    to: "engine",
+                    function: "deactivate",
+                    params: []
+                })
+            }
+
+            /* UI Initialisation */
+            $(".resizable").resizable({ handles: { 's': '.grip' } });
+            for (let i = 0; i < document.getElementsByClassName('reveal').length; i++) {
+                var c = document.getElementsByClassName('reveal')[i]
+                var s = c.getElementsByTagName('span')[0]
+                c.setAttribute('expanded', 'false')
+                s.addEventListener('click', (e) => {
+                    var p = e.composedPath()
+                    var c2 = p[1].getAttribute('expanded')?p[1]:p[2]
+                    var t = p[1].getAttribute('expanded')?p[0].getElementsByTagName('span')[0]:p[0];
+                    if (c2.getAttribute('expanded') == 'false') {
+                        t.style.transform = 'rotate(0deg)';
+                        c2.getElementsByTagName('div')[0].style.display = 'block';
+                        c2.setAttribute('expanded', 'true')
+                    } else {
+                        t.style.transform = 'rotate(-90deg)';
+                        c2.getElementsByTagName('div')[0].style.opacity = '0';
+                        setTimeout(() => {
+                            c2.getElementsByTagName('div')[0].style.opacity = '1';
+                            c2.getElementsByTagName('div')[0].style.display = 'none';
+                        }, 200)
+                        c2.setAttribute('expanded', 'false')
+                    }
+                })
+            }
+
+            /* Configure Connection to Engine via Shell */
+           /* So UI won't compromise for performance   */
+            let string = '';
+            let oldBestMove = undefined;
+            let evalLevel = document.getElementsByClassName('eval-level')[0];
+            let engine = {
+                playForWhite: false,
+                playForBlack: false,
+                analysisDepth: 60,
+                threads: 1,
+                playingDepth: 20,
+                currDepth: 0,
+                startTime: 0,
+                runTime: 0,
+                evaluation: {
+                    better: 'white',
+                    line: [],
+                    score: 0
+                },
+                stop: () => parent.postMessage({ to: "engine", function: "deactivate", params: [] })
+            }
+            document.getElementById('engine-threads').value = engine.threads
+            document.getElementById('analysis-depth').value = engine.analysisDepth
+            document.getElementById('playing-depth').value = engine.playingDepth
+            document.getElementById('engine-threads').onchange = (e) => {
+                var v = e.srcElement.value
+                engine.threads = (parseInt(v) > 0)?parseInt(v):e.srcElement.value = engine.threads;
+            }
+            document.getElementById('analysis-depth').onchange = (e) => {
+                var v = e.srcElement.value
+                engine.analysisDepth = (parseInt(v) > 0)?parseInt(v):e.srcElement.value = engine.analysisDepth;
+            }
+            document.getElementById('playing-depth').onchange = (e) => {
+                var v = e.srcElement.value
+                engine.playingDepth = (parseInt(v) > 0)?parseInt(v):e.srcElement.value = engine.playingDepth;
+            }
+            onmessage = function (ev) {
+                if (ev.data.subject == 'engine-output') {
+                    var log = ev.data.content;
+                    try {log = JSON.parse(ev.data.content)} catch (e) {console.warn(e)}
+                    if (log.score) {
+                        if (log.score.toString().includes('M')) {
+                            var w = ''
+                            if (log.winning == 'currentplayer') {
+                                w = log.to
+                            } else if (log.to == 'WHITE') { w = 'BLACK' }
+                            else { w = 'WHITE' }
+                            if (w == 'WHITE') evalLevel.style.height = '100%';
+                            else evalLevel.style.height = '0%';
+                        } else {
+                            log.score = log.score / 100;
+                            if (log.to == 'BLACK') log.score = log.score * -1;
+                            if (log.score > 8) evalLevel.style.height = '98%';
+                            else if (log.score < -5) evalLevel.style.height = '5%';
+                            else evalLevel.style.height = (50 + log.score * 6) + '%';
+                        }
+                        document.getElementById('eval').innerText = log.score
+                        var es = document.getElementById('eval-signifier')
+                        var ns = (Math.round(log.score * 10) / 10).toString().replace('-', '')
+                        if (ns.length == 1) ns += '.0'
+                        if (log.score.toString().includes('M')) ns = log.score
+                        es.innerText = ns
+                        if (log.score < 0) es.classList = 'black'
+                        else es.classList = 'white'
+                        if (parseInt(evalLevel.style.height, 10) >= 50) engine.evaluation.better = 'white'
+                        else engine.evaluation.better = 'black'
+                        engine.evaluation.score = log.score;
+                    }
+                    if (log.depth) {
+                        engine.currDepth = log.depth
+                        document.getElementById('depth').innerText = log.depth
+                    }
+                    if (log.nps) document.getElementById('nps').innerText = log.nps.shorter()
+                    if (log.nodes) document.getElementById('nodes').innerText = log.nodes.shorter()
+                    if (log.pv) {
+                        if (engine.playForWhite && game.turn() == 'w' && engine.currDepth >= engine.playingDepth) {
+                            var move = {
+                                from: log.pv[0].charAt(0) + log.pv[0].charAt(1),
+                                to: log.pv[0].charAt(2) + log.pv[0].charAt(3)
+                            }
+                            if (log.pv[0].charAt(4)) move.promotion = log.pv[0].charAt(4)
+                            if (game.move(move)) {
+                                runEngine(game.fen(), engine.analysisDepth)
+                                board.position(game.fen())
+                            }
+                        } else if (engine.playForBlack && game.turn() == 'b' && engine.currDepth >= engine.playingDepth) {
+                            var move = {
+                                from: log.pv[0].charAt(0) + log.pv[0].charAt(1),
+                                to: log.pv[0].charAt(2) + log.pv[0].charAt(3)
+                            }
+                            if (log.pv[0].charAt(4)) move.promotion = log.pv[0].charAt(4)
+                            if (game.move(move)) {
+                                runEngine(game.fen(), engine.analysisDepth)
+                                board.position(game.fen())
+                            }
+                        }
+                        if (log.pv[0] != oldBestMove) {
+                            oldBestMove = log.pv[0]
+                            document.getElementById('bestmove').innerText = log.pv[0]
+                            overlay.clear()
+                        }
+                    }
+                    if (log.string) {
+                        if (string != log.string) {
+                            string = log.string;
+                            document.getElementById('engine-string').innerText = string;
+                        }
+                    }
+                    var types = ['string', 'score', 'depth', 'time', 'pv']
+                    if (log.score && log.depth && log.time && log.pv) {
+                        var ac = document.getElementById('analysis-container')
+                        var sc = engine.evaluation.score
+                        var ad = engine.evaluation.better
+                        if (log.pv.outlasts(engine.evaluation.line)) engine.evaluation.line = log.pv;
+                        ac.innerHTML = `<div>
+                            <span style='color:${ad=='white'?'var(--green)':'var(--red)'}'>
+                                ${ad=='white'?'+':''}${sc.toString().includes('M')?sc:sc.Decimal2()}
+                            </span>
+                            <span>${engine.evaluation.line.join(' ')}</span>
+                            <span>(depth ${log.depth}, ${log.time.toFullTime()})</span>
+                        </div>`;
+                        ac.scrollTop = ac.scrollHeight;
+                    }
+                    var nd = [];
+                    for (let i = 0; i < types.length; i++) {
+                        if (log[types[i]]) {
+                            if (Array.isArray(log[types[i]]))nd.push(types[i] + ' - ' + log[types[i]].join(' '))
+                            else nd.push(types[i] + ' - ' + log[types[i]])
+                        }
+                    }
+                }
+            }
+            function runEngine(fen, depth) {
+                engine.stop()
+                document.getElementById('analysis-container').innerText = '';
+                parent.postMessage({
+                    to: "engine",
+                    function: "activate",
+                    params: [
+                        "\"shell\"",
+                        `[
+                            '${fen}',
+                            "depth",
+                            ${depth},
+                            '${window.parent.settings.engine[window.parent.settings.engine.use].location}',
+                            ${engine.threads}
+                        ]`
+                    ]
+                })
+                engine.startTime = performance.now()
+                engine.runTime = 0;
+            }
+            runEngine('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', engine.analysisDepth)
+            setInterval(() => {
+                engine.runTime = performance.now() - engine.startTime
+                document.getElementById('time').innerText = (engine.runTime / 1000).toFullTime()
+            }, 1000)
+
+            /* Manage Virtual Chess Board */
+            const game_instance = {
+                undo: () => {
+                    game.undo()
+                    board.position(game.fen())
+                    runEngine(game.fen(), engine.analysisDepth)
+                },
+                flip: () => {
+                    board.flip()
+                    overlay.clear()
+                },
+                clear: () => {
+                    game.clear()
+                    var fen = game.fen()
+                    board.position(fen)
+                    runEngine(fen, engine.analysisDepth)
+                },
+                reset: () => {
+                    board.start()
+                    game.reset()
+                    runEngine(game.fen(), engine.analysisDepth)
+                }
+            }
+            let boardContainer = document.getElementById('board-container')
+            let boardEl = document.getElementById('board1')
+            let pCanvas = document.getElementById('primary-canvas')
+            let dCanvas = document.getElementById('drawing-canvas')
+            let game = new Chess()
+            let w = window.innerHeight * 3 / 4;
+            boardContainer.style.height = w;
+            boardEl.style.width = w;
+            pCanvas.width = w - 2;
+            pCanvas.height = w - 2;
+            dCanvas.width = w - 2;
+            dCanvas.height = w - 2;
+            document.getElementsByClassName('eval-bar')[0].style.height = w - 4;
+            document.getElementsByClassName('board-display')[0].style.width = w;
+            var board = Chessboard('board1', {
+                draggable: true,
+                pieceTheme: './chessboard/img/chesspieces/neo/{piece}.png',
+                position: 'start',
+                onDrop: function(source, target, piece, newPos, oldPos) {
+                    if (!game.move({from: source, to: target, promotion: 'q'})) return 'snapback'
+                    engine.currDepth = 0
+                    runEngine(game.fen(), engine.analysisDepth)
+                    setTimeout(() => board.position(game.fen()), 100)
+                }
+            })
+            var overlay = new ChessboardArrows(
+                'board-container',
+                2,
+                getComputedStyle(document.body).getPropertyValue('--lining-colour'),
+                function() {
+                    var start = oldBestMove.charAt(0) + oldBestMove.charAt(1)
+                    var stop = oldBestMove.charAt(2) + oldBestMove.charAt(3)
+                    overlay.drawArrowFromSquare(start, stop, board.orientation())
+                }
+            )
+            function resizeBoard() {
+                w = window.innerHeight * 3 / 4;
+                var f = board.fen();
+                board.destroy();
+                boardContainer.style.height = w;
+                boardEl.style.width = w;
+                pCanvas.width = w - 2;
+                pCanvas.height = w - 2;
+                dCanvas.width = w - 2;
+                dCanvas.height = w - 2;
+                pCanvas.style.width = w - 2;
+                pCanvas.style.height = w - 2;
+                dCanvas.style.width = w - 2;
+                dCanvas.style.height = w - 2;
+                document.getElementsByClassName('eval-bar')[0].style.height = w - 4;
+                document.getElementsByClassName('board-display')[0].style.width = w;
+                board = Chessboard('board1', {
+                    draggable: true,
+                    pieceTheme: './chessboard/img/chesspieces/neo/{piece}.png',
+                    position: f,
+                    onDrop: function(source, target, piece, newPos, oldPos) {
+                        if (!game.move({from: source, to: target})) return 'snapback'
+                        engine.currDepth = 0
+                        runEngine(game.fen(), engine.analysisDepth)
+                        setTimeout(() => board.position(game.fen()), 100)
+                    }
+                })
+                var col = getComputedStyle(document.body).getPropertyValue('--lining-colour')
+                overlay.changeResolution(pCanvas, 2)
+                overlay.changeResolution(dCanvas, 2)
+                overlay.setColour(col, overlay.primaryContext)
+                overlay.setColour(col, overlay.drawContext)
+            }
+            window.addEventListener('resize', resizeBoard)
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+                var col = getComputedStyle(document.body).getPropertyValue('--lining-colour')
+                overlay.setColour(col, overlay.primaryContext)
+            })
+        </script>
+    </body>
+</html>

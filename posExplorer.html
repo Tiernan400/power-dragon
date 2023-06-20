@@ -1,0 +1,399 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="chessboard/main.css">
+        <link rel="stylesheet" href="css/root.css">
+        <style>
+            @media (prefers-color-scheme: dark) {
+                body {
+                    background: #292a2d;
+                    color: white;
+                }
+                .btn {
+                    color: white;
+                    background: #131313;
+                    border: 1px solid #131313;
+                }
+                .container { background: #202020; }
+                .container-title { background: #202020; }
+                #player button {
+                    background: #202020;
+                    color: white;
+                }#player button:hover { background: #292a2d; }
+                #move-container {
+                    background: #202020;
+                    border-bottom: 2px solid #292a2d;
+                }
+                #move-container .move {
+                    background: #202020;
+                }#move-container .move:hover { background: #292a2d; }
+            }
+            @media (prefers-color-scheme: light) {
+                body {
+                    background: #ffffff;
+                    color: black;
+                }
+                .container { background: #f3f3f3; }
+                .container-title { background: #f3f3f3; }
+                .btn {
+                    color: black;
+                    background: #c0c0c0;
+                    border: 1px solid #c0c0c0;
+                }
+                #player button {
+                    background: #f3f3f3;
+                    color: black;
+                }#player button:hover { background: #c0c0c0; }
+                #move-container {
+                    background: #f3f3f3;
+                    border-bottom: 2px solid #ffffff;
+                }
+                #move-container .move {
+                    background: #f3f3f3;
+                }#move-container .move:hover { background: #ffffff; }
+            }
+            body { margin: 0; }
+            main {
+                display: flex;
+                justify-content: space-evenly;
+            }
+            hr {
+                background: var(--lining-colour);
+                border: 1px solid var(--lining-colour);
+            }
+            .btn {
+                font-family: var(--default-font);
+                font-size: 20px;
+                cursor: pointer;
+                text-decoration: none;
+                padding: 2px;
+                border-radius: 5px;
+                margin: 2px;
+            }
+            .board-display {
+                height: 100%;
+            }
+            .technical {
+                flex-grow: 0.8;
+                display: flex;
+            }
+            .down-flex {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+            }
+            .container {
+                border-radius: 5px;
+                width: 100%;
+                margin: 7px;
+            }
+            .inner-container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            #player {
+                height: 80px;
+                white-space: nowrap;
+                font-size: 0px;
+                margin-top: 0px;
+            }
+            #player button {
+                border: none;
+                cursor: pointer;
+                width: calc( 100% / 4 );
+                font-size: 20px;
+                height: 100%;
+                transition: all 0.2s linear;
+            }
+            #player button:first-of-type { border-top-left-radius: 5px; border-bottom-left-radius: 5px; }
+            #player button:last-of-type { border-top-right-radius: 5px; border-bottom-right-radius: 5px; }
+            #board-container {
+                flex-grow: 1;
+            }
+            #explorer {
+                height: 100%;
+            }
+            #explorer-nav {
+                height: 25px;
+                display: flex;
+                align-items: center;
+                justify-content: space-evenly;
+                font-family: var(--default-font);
+            }
+            .container-title {
+                display: block;
+                font-size: 20px;
+                padding: 5px;
+                cursor: default;
+                font-family: var(--default-font);
+            }
+            #move-container {
+                height: 200px;
+                padding: 10px;
+                font-family: monospace;
+                margin-bottom: 10px;
+                overflow: auto;
+                user-select: none;
+            }
+            #move-container .move {
+                display: block;
+                font-size: 20px;
+                padding: 5px;
+                cursor: default;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div class="board-display">
+                <div class="down-flex">
+                    <div class="container" id="board-container">
+                        <div id="board1"></div>
+                    </div>
+                    <div class="container" id="player">
+                        <button><</button>
+                        <button onclick="board.flip()">Flip</button>
+                        <button onclick="resetGame()">Reset</button>
+                        <button>></button>
+                    </div>
+                </div>
+            </div>
+            <div class="technical">
+                <div class="down-flex">
+                    <div class="container" id="explorer">
+                        <div id="explorer-nav">
+                            <span id="variant_key"></span>
+                        </div>
+                        <hr style="margin-top:0;">
+                        <div class="container-title">Move</div>
+                        <div id="move-container"></div>
+                        <div class="inner-container">
+                            <input type="file" id="file-open" style="display:none;"/>
+                            <label class="btn" for="file-open">Open File</label>
+                            <a class="btn" id="btn-save-as" href="" download="untitled.cydli">Save As</a>
+                        </div>
+                        <hr>
+                        <div class="inner-container">
+                            <dropdown>
+                                <span>Variant</span>
+                                <ul>
+                                    <li onclick="changeVariant('standard')">Standard</li>
+                                    <li onclick="changeVariant('atomic')">Atomic</li>
+                                    <li onclick="changeVariant('antichess')">Antichess</li>
+                                    <li onclick="changeVariant('horde')">Horde</li>
+                                    <li onclick="changeVariant('kingOfTheHill')">King of the Hill</li>
+                                    <li onclick="changeVariant('threeCheck')">3Check</li>
+                                </ul>
+                            </dropdown>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <script src="js/prototype.min.js"></script>
+        <script src="./js/jquery.min.js"></script>
+        <script src="./chessboard/js/main.js"></script>
+        <script src="./js/dropdown.min.js"></script>
+        <script>
+            if (parent == self) window.close()
+            else window.name = 'posExp' + (parent.posExplorers - 1)
+
+            /* Virtual Chess Board Management */
+            let boardEl = document.getElementById('board1');
+            let w = window.innerHeight * 3 / 4;
+            boardEl.style.width = w
+            document.getElementsByClassName('board-display')[0].style.width = w;
+            var board = Chessboard('board1', {
+                draggable: true,
+                position: 'start',
+                pieceTheme: './chessboard/img/chesspieces/neo/{piece}.png',
+                onDragStart: function(source) {
+                    if (!available[source]) return false
+                },
+                onDrop: function(source, target, piece, newPos, oldPos) {
+                    if (available[source] && available[source].includes(target)) {
+                        scala.postMessage({
+                            topic: 'move',
+                            payload: {
+                                fen: gameFEN,
+                                uciMoves: uciMoves,
+                                pgn: gamePGN,
+                                variant: variantKey,
+                                orig: source,
+                                dest: target
+                            }
+                        })
+                    } else {
+                        return 'snapback'
+                    }
+                }
+            })
+            function resetGame() {
+                gameFEN = '';
+                uciMoves = [];
+                gamePGN = [];
+                available = {};
+                winner = undefined;
+                scala.postMessage({
+                    topic: 'init',
+                    payload: {
+                        variant: variantKey
+                    }
+                })
+            }
+            function resizeBoard() {
+                w = window.innerHeight * 3 / 4;
+                var f = board.fen();
+                board.destroy()
+                boardEl.style.width = w;
+                document.getElementsByClassName('board-display')[0].style.width = w;
+                board = Chessboard('board1', {
+                    draggable: true,
+                    pieceTheme: './chessboard/img/chesspieces/neo/{piece}.png',
+                    position: f,
+                    onDrop: function(source, target, piece, newPos, oldPos) {
+                        if (available[source] && available[source].includes(target)) {
+                            scala.postMessage({
+                                topic: 'move',
+                                payload: {
+                                    fen: gameFEN,
+                                    uciMoves: uciMoves,
+                                    pgn: gamePGN,
+                                    variant: variantKey,
+                                    orig: source,
+                                    dest: target
+                                }
+                            })
+                        } else {
+                            return 'snapback'
+                        }
+                    }
+                })
+            }
+            window.addEventListener('resize', resizeBoard)
+
+            /* File Open */
+            document.getElementById('file-open').addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    const reader = new FileReader()
+                    reader.onload = (ev) => {
+                        exploration = JSON.parse(ev.target.result.replace(/hstg/g, '#'))
+                        changeVariant(exploration.variant, true)
+                    }
+                    reader.readAsText(e.target.files[0])
+                }
+            })
+
+            /* Chess & Explorer Logic */
+            let variantKey = 'standard';
+            let variantName = 'Standard';
+            let gameFEN = '';
+            let lastFEN = '';
+            let uciMoves = [];
+            let gamePGN = [];
+            let available = {};
+            let winner = undefined;
+            let exploration = { variant: 'standard' };
+            function move(uci) {
+                var split = uci.match(/.{1,2}/g);
+                scala.postMessage({
+                    topic: 'move',
+                    payload: {
+                        fen: gameFEN,
+                        uciMoves: uciMoves,
+                        pgn: gamePGN,
+                        variant: variantKey,
+                        orig: split[0],
+                        dest: split[1]
+                    }
+                })
+            }
+            let scala = new Worker('./js/workers/scalachess.js')
+            scala.onmessage = function(msg) {
+                if (msg.data.topic == 'init') {
+                    gameFEN = msg.data.payload.setup.fen;
+                    uciMoves = msg.data.payload.setup.uciMoves;
+                    gamePGN = [];
+                    available = msg.data.payload.setup.dests;
+                    board.position(gameFEN)
+                    variantKey = msg.data.payload.variant.key;
+                    variantName = msg.data.payload.variant.name;
+                    exploration.variant = variantKey;
+                    document.getElementById('variant_key').innerText = variantName;
+                    document.getElementById('move-container').innerHTML = '';
+                    if (exploration[gameFEN]) {
+                        for (let i = 0; i < exploration[gameFEN].length; i++) {
+                            document.getElementById('move-container').innerHTML += `<div class='move' onclick='move("${exploration[gameFEN][i].uci}")'>
+    ${exploration[gameFEN][i].pgn}
+</div>`;
+                        }
+                    }
+                } else if (msg.data.topic == 'move') {
+                    var s = msg.data.payload.situation;
+                    available = s.dests;
+                    lastFEN = gameFEN;
+                    gameFEN = s.fen;
+                    uciMoves = s.uciMoves;
+                    gamePGN.push(s.pgnMoves[s.pgnMoves.length - 1]);
+                    winner = s.winner;
+                    if (!exploration[lastFEN]) {
+                        var c = confirm('Add new move?')
+                        if (c) {
+                            exploration[lastFEN] = [{
+                                uci: uciMoves[uciMoves.length - 1],
+                                pgn: gamePGN[gamePGN.length - 1]
+                            }]
+                            document.getElementById('btn-save-as').href = "data:application/xml;charset=utf-8,"+JSON.stringify(exploration).replace(/#/g, 'hstg')
+                        }
+                    } else {
+                        var deja = false;
+                        for (let g = 0; g < exploration[lastFEN].length; g++) {
+                            if (exploration[lastFEN][g].uci == uciMoves[uciMoves.length - 1]) {
+                                deja = true;
+                                break;
+                            }
+                        }
+                        if (!deja) {
+                            var c = confirm('Add new move?')
+                            if (c) {
+                                exploration[lastFEN].push({
+                                    uci: uciMoves[uciMoves.length - 1],
+                                    pgn: gamePGN[gamePGN.length - 1]
+                                })
+                                document.getElementById('btn-save-as').href = "data:application/xml;charset=utf-8,"+JSON.stringify(exploration).replace(/#/g, 'hstg')
+                            }
+                        }
+                    }
+                    document.getElementById('move-container').innerHTML = '';
+                    if (exploration[gameFEN]) {
+                        for (let i = 0; i < exploration[gameFEN].length; i++) {
+                            document.getElementById('move-container').innerHTML += `<div class='move' onclick='move("${exploration[gameFEN][i].uci}")'>
+    ${exploration[gameFEN][i].pgn}
+</div>`;
+                        }
+                    }
+                    if (winner) console.log(winner)
+                    setTimeout(() => board.position(gameFEN), 100)
+                } else if (msg.data.topic == 'error') {
+                    console.log(msg.data)
+                }
+            }
+            scala.postMessage({
+                topic: 'init',
+                payload: {
+                    variant: 'standard'
+                }
+            })
+            const changeVariant = (variant, override) => {
+                if (override || variantKey != variant) {
+                    scala.postMessage({
+                        topic: 'init',
+                        payload: {
+                            variant: variant
+                        }
+                    })
+                }
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/main.css">
+    <title>Cydli</title>
+  </head>
+  <body>
+    <nav>
+        <div class="nav-controls">
+            <button title="Minimise" class="minimise" onclick="win.minimise()"></button>
+            <button title="Maximise" class="maximise" id="btn-max" onclick="win.maximise(this)"></button>
+            <button title="Close" class="close" onclick="win.close()"></button>
+        </div>
+        <div class="tab focused" linked="home" onclick="tab(this)">Home</div>
+        <div class="tab" linked="settings" onclick="tab(this)">Settings</div>
+    </nav>
+    <main>
+        <content id="home" class="focused">
+            <div class="cydli-title">Cydli</div>
+            <button onclick="remote.getCurrentWebContents().openDevTools()">Open Developer Tools</button>
+            <button onclick="window.location.reload()">Reload</button>
+            <button onclick="newAnalysis();">New Analysis</button>
+            <button onclick="newPosExplorer();">Position Explorer</button>
+        </content>
+        <content id="settings">
+            <div style="width:100%;height:100%;display:flex;flex-direction:column;">
+                <h1 style="text-align:center;">Cydli Chess Interface</h1>
+                <div style="display:flex;flex-grow:1;">
+                    <div style="width:70%;">
+                        <div class="section">
+                            <b>Personalisation</b><br><br>
+                            <div>
+                                Theme:
+                                <dropdown style="z-index:999999;">
+                                    <span id="theme-span"></span>
+                                    <ul>
+                                        <li onclick="updateSettings('personalisation', 'theme', 'system')">System</li>
+                                        <li onclick="updateSettings('personalisation', 'theme', 'light')">Light</li>
+                                        <li onclick="updateSettings('personalisation', 'theme', 'dark')">Dark</li>
+                                    </ul>
+                                </dropdown>
+                            </div>
+                            <div>
+                                Start Maximised:
+                                <switch id="switch-maximise" onswitch="updateSettings('personalisation', 'startMaximised', !this.vl, false, true);" fsize="18px">
+                                    <opt scolor="chartreuse" sbgcolor="#292a2d">Enabled</opt
+                                    ><opt scolor="red" sbgcolor="#292a2d">Disabled</opt>
+                                </switch>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <b>Engine Configuration</b><br><br>
+                            <div>
+                                Engine: <span id="engine-id"></span><br>
+                                <input type="file" id="set-engine"/>
+                            </div>
+                        </div>
+                        <div class="section">
+                            <b>Versions</b><br><br>
+                            <div>
+                                Cydli <span id="cydli-version">1.0.7</span><br>
+                                Node.js: <span id="node-version"></span><br>
+                                Chromium: <span id="chrome-version"></span><br>
+                                Electron: <span id="electron-version"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="width:30%;height:100%;border-top:2px solid var(--lining-colour);border-left:2px solid var(--lining-colour);">
+                        <b>Details</b>
+                    </div>
+                </div>
+            </div>
+        </content>
+    </main>
+    <script src="js/prototype.min.js"></script>
+    <script src="js/functions.min.js"></script>
+    <script src="js/dropdown.min.js"></script>
+    <script src="js/switch.min.js"></script>
+    <script type="text/javascript">
+        const menu = new Menu()
+        window.settings = JSON.parse(file.get(PATH.settings));
+        if (settings.engine.use != "none" && settings.engine[settings.engine.use].location == "") {
+            settings.engine.use = "none";
+            file.put(PATH.settings, JSON.stringify(settings));
+        }
+        document.getElementById('engine-id').innerHTML = settings.engine.use.capitaliseFirstLetter()
+        if (settings.personalisation.startMaximised == false) {
+            document.getElementById('switch-maximise').click();
+        }
+        document.getElementById('theme-span').innerHTML = settings.personalisation.theme.capitaliseFirstLetter() + " <span style='float:right;'>&blacktriangledown;</span>";
+        function updateSettings(section, setting, value, restartRequired, convert2Bool) {
+            if (section && setting) {
+                if (convert2Bool) value = value?true:false;
+                settings[section][setting] = value;
+                if (restartRequired) alert('A restart is required for all changes to take effect')
+                if (setting == 'theme') {
+                    document.getElementById('theme-span').innerHTML = value.capitaliseFirstLetter() + " <span style='float:right;'>&blacktriangledown;</span>";
+                    ipcRenderer.send('set-theme', value)
+                }
+            }
+            file.put(PATH.settings, JSON.stringify(settings));
+        }
+        document.getElementById('set-engine').addEventListener('change', function(e) {
+            settings.engine[settings.engine.use].location = e.target.files[0].path
+            updateSettings()
+        })
+        onmessage = function(ev) {
+            if (ev.data.to == 'engine') {
+                var a = ev.data.params
+                a.unshift('"'+ev.source.name+'"')
+                var s = 'e[ev.data.function]('+a.join(', ')+')';
+                s = s.replace(/\\/g, '\\\\')
+                eval(s)
+            }
+        }
+        e.onoutput = function(from, output) {
+            var f = document.getElementById(from.replace('analysis', ''));
+            f = f.getElementsByTagName('iframe')[0];
+            var w = f.contentWindow;
+            w.postMessage({
+                subject: 'engine-output',
+                content: output
+            });
+        }
+        function newTitle(title) {
+            ipcRenderer.send('set-title', title)
+        }
+        menu.append(new MenuItem ({
+            label: 'Engine',
+            submenu: [
+                new MenuItem({
+                    label: 'Off',
+                    id: 'engine-off',
+                    type: 'checkbox',
+                    click() {
+                        setEngine('off');
+                    }
+                }),
+                new MenuItem({type: 'separator'}),
+                new MenuItem({
+                    label: 'Stockfish',
+                    id: 'engine-stockfish',
+                    type: 'checkbox',
+                    click() {
+                        setEngine('stockfish')
+                    }
+                }),
+                new MenuItem({
+                    label: 'Zelpha',
+                    id: 'engine-zelpha',
+                    type: 'checkbox',
+                    click() {
+                        setEngine('zelpha')
+                    }
+                })
+            ]
+        }))
+        menu.append(new MenuItem({type: 'separator'}))
+        menu.append(new MenuItem({
+            role: 'Reload'
+        }))
+        menu.append(new MenuItem ({
+            role: 'toggleDevTools'
+        }))
+        window.addEventListener('contextmenu', (e) => {
+            e.preventDefault()
+            menu.popup(remote.getCurrentWindow())
+        }, false)
+
+        function setEngine(e) {
+                menu.getMenuItemById('engine-off').checked = false;
+                menu.getMenuItemById('engine-stockfish').checked = false;
+                menu.getMenuItemById('engine-zelpha').checked = false;
+                menu.getMenuItemById('engine-'+e).checked = true;
+                settings.engine.use = e.replace('off', 'none')
+                updateSettings()
+                if (e != "off" && settings.engine[e].location == "") {
+                    alert('A path to the '+e+' engine is not defined. Please specify its location.')
+                }
+                document.getElementById('engine-id').innerHTML = settings.engine.use.capitaliseFirstLetter()
+        }
+        menu.getMenuItemById("engine-"+settings.engine.use.replace("none", "off")).checked = true;
+
+        function tab(el) {
+            if (!el.classList.contains('focused')) {
+                for (let i = 0; i < document.getElementsByClassName('tab').length; i++) {
+                    document.getElementsByClassName('tab')[i].classList = 'tab';
+                }
+                el.classList.toggle('focused');
+                for (let i = 0; i < document.getElementsByTagName('content').length; i++) {
+                    document.getElementsByTagName('content')[i].style.display = 'none';
+                }
+                document.getElementById(el.getAttribute('linked')).style.display = 'block';
+                var t = el.getAttribute('linked');
+                if (parseInt(t)) {
+                    t = 'Analysis '+t;
+                }
+                newTitle("Cydli - "+t.capitaliseFirstLetter())
+            }
+        }
+        var games = 0;
+        var posExplorers = 0;
+        function newAnalysis() {
+            games += 1;
+            var el = document.createElement('div');
+            el.classList = 'tab';
+            el.setAttribute('linked', games.toString());
+            el.innerHTML = `Analysis${games==1?'':' '+games}`;
+            el.onclick = function() {tab(this)};
+            var newContent = document.createElement('content');
+            newContent.id = games.toString();
+            newContent.innerHTML = '<iframe src="analysis.html"/>';
+            document.getElementsByTagName('nav')[0].appendChild(el);
+            document.getElementsByTagName('main')[0].appendChild(newContent);
+            tab(el);
+        }
+        function newPosExplorer() {
+            posExplorers += 1;
+            var el = document.createElement('div');
+            el.classList = 'tab';
+            el.setAttribute('linked', 'position Explorer '+posExplorers.toString());
+            el.innerHTML = `Position Explorer${posExplorers==1?'':' '+posExplorers}`;
+            el.onclick = function() {tab(this)};
+            var newContent = document.createElement('content');
+            newContent.id = 'position Explorer '+posExplorers.toString();
+            newContent.innerHTML = '<iframe src="posExplorer.html"/>';
+            document.getElementsByTagName('nav')[0].appendChild(el);
+            document.getElementsByTagName('main')[0].appendChild(newContent);
+            tab(el);
+        }
+   </script>
+  </body>
+</html>

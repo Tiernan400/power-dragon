@@ -1,0 +1,17 @@
+{
+  "name": "cydli",
+  "version": "1.0.0",
+  "description": "Chess Interface. Can run Zelpha & Stockfish.",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Tiernan Crotty",
+  "license": "ISC",
+  "dependencies": {
+    "@electron/remote": "^2.0.9",
+    "chessboard-arrows": "^1.0.2",
+    "electron": "^22.0.0",
+    "python-shell": "^5.0.0"
+  }
+}
