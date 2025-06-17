@@ -3,12 +3,14 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/main.css">
+    <style id="dynamic-root"></style>
     <title>Power Dragon</title>
   </head>
   <body>
     <nav>
         <div class="tab focused" linked="balancer" onclick="tab(this)">Balancer</div>
         <div class="tab" linked="weights" onclick="tab(this)" id="weight-tab">Weights</div>
+        <div class="tab" linked="boats" onclick="tab(this)" id="boat-tab">Boats</div>
         <div class="tab" linked="settings" onclick="tab(this)">Settings</div>
     </nav>
     <main>
@@ -31,38 +33,7 @@
                 <button id="begin-btn" style="width:30%;cursor:pointer;" onclick="startAlg();">Start Now</button>
             </div>
             <div id="boat-container" style="height:100%;background:var(--focused-colour);">
-                <div class="boat">
-                    <div class="part"></div>
-                    <div class="part"></div>
-                    <div class="part"></div>
-                    <div class="part"></div>
-                    <div class="part"></div>
-                    <div class="part"></div>
-                    <div class="part"></div>
-                    <div class="part"></div>
-                    <div class="part"></div>
-                    <div class="part"></div>
-                </div>
-                <div class="label"><span>1</span><b></b></div>
-                <div class="label"><span>2</span><b></b></div>
-                <div class="label"><span>3</span><b></b></div>
-                <div class="label"><span>4</span><b></b></div>
-                <div class="label"><span>5</span><b></b></div>
-                <div class="label"><span>6</span><b></b></div>
-                <div class="label"><span>7</span><b></b></div>
-                <div class="label"><span>8</span><b></b></div>
-                <div class="label"><span>9</span><b></b></div>
-                <div class="label"><span>10</span><b></b></div>
-                <div class="label"><span>11</span><b></b></div>
-                <div class="label"><span>12</span><b></b></div>
-                <div class="label"><span>13</span><b></b></div>
-                <div class="label"><span>14</span><b></b></div>
-                <div class="label"><span>15</span><b></b></div>
-                <div class="label"><span>16</span><b></b></div>
-                <div class="label"><span>17</span><b></b></div>
-                <div class="label"><span>18</span><b></b></div>
-                <div class="label"><span>19</span><b></b></div>
-                <div class="label"><span>20</span><b></b></div>
+                <div class="boat"></div>
             </div>
             <div class="stats-left">
                 <h1>Left Side</h1>
@@ -120,6 +91,25 @@
                 </div>
             </div>
         </content>
+        <content id="boats">
+            <div style="position:absolute;width:100%;height:100%;">
+                <h1 style="text-align:center;">My Dragon Boats</h1>
+                <div class="card-container" id="boat-list"></div>
+            </div>
+            <div class="modal" id="add-boat-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <span class="close" id="boat-modal-close">&times;</span>
+                        <h2>Add Boat to Algorithm</h2>
+                    </div>
+                    <div class="modal-body">
+                        Name: <input id="boat-name" type="text"/><br><br>
+                        No. of Seats: <input id="boat-seats" type="number"/><br><br>
+                        <button onclick="addBoat(true);">Submit</button><br><br>
+                    </div>
+                </div>
+            </div>
+        </content>
         <content id="settings">
             <div style="width:100%;height:100%;display:flex;flex-direction:column;">
                 <h1 style="text-align:center;">Balancing Algorithm Interface</h1>
@@ -127,7 +117,7 @@
                     <div style="width:70%;">
                         <div class="section">
                             <b>Personalisation</b><br><br>
-                            <div>
+                            <div class="setting" description="The colour theme through which the app is displayed">
                                 Theme:
                                 <dropdown style="z-index:999999;">
                                     <span id="theme-span"></span>
@@ -138,21 +128,24 @@
                                     </ul>
                                 </dropdown>
                             </div>
-                            <div>
+                            <div class="setting" description="Whether or not the app will fill the available screen space on startup">
                                 Start Maximised:
                                 <switch id="switch-maximise" onswitch="updateSettings('personalisation', 'startMaximised', !this.vl, false, true);" fsize="18px">
                                     <opt scolor="chartreuse" sbgcolor="#292a2d">Enabled</opt
                                     ><opt scolor="red" sbgcolor="#292a2d">Disabled</opt>
                                 </switch>
                             </div>
-                            <div>
+                        </div>
+                        <div class="section">
+                            <b>Advanced</b><br><br>
+                            <div class="setting" description="This attempts to run a static local server in the background of the app, when connected to a private WiFi network. It is used to share images of the balanced boat with other devices on the same WiFi network.">
                                 Run Static Server to Share Files <i style="color:red;">*experimental</i>:
                                 <switch id="switch-server" fsize="18px">
                                     <opt scolor="chartreuse" sbgcolor="#292a2d">Enabled</opt
                                     ><opt scolor="red" sbgcolor="#292a2d">Disabled</opt>
                                 </switch>
                             </div>
-                            <div>
+                            <div class="setting" description="Allows the application to use the preferred GPU for rendering">
                                 Enable Hardware Acceleration:
                                 <switch id="switch-hardware-acceleration" onswitch="updateSettings('personalisation', 'enableHardwareAcceleration', !this.vl, true, true);" fsize="18px">
                                     <opt scolor="chartreuse" sbgcolor="#292a2d">Enabled</opt
@@ -163,7 +156,7 @@
                         <div class="section">
                             <b>Versions</b><br><br>
                             <div>
-                                Power Dragon: <span id="balancer-version">1.3</span><br>
+                                Power Dragon: <span id="balancer-version">1.4</span><br>
                                 Node.js: <span id="node-version"></span><br>
                                 Chromium: <span id="chrome-version"></span><br>
                                 Electron: <span id="electron-version"></span><br>
@@ -173,6 +166,7 @@
                     </div>
                     <div style="width:30%;height:100%;border-top:2px solid var(--lining-colour);border-left:2px solid var(--lining-colour);">
                         <b>Details</b>
+                        <p class="setting-description" style="padding:5px"></p>
                     </div>
                 </div>
             </div>
@@ -191,58 +185,28 @@
     <script type="text/javascript">
         let optimal = {};
         let boatPos = []
-        for (let i = 0; i < parseInt(settings.boat.seats, 10) * 2; i++) {
-            boatPos.push('SPACE')
-        }
         let moving = -1;
-        for (let i = 0; i < getClass('label').length; i++) {
-            var cur = getClass('label')[i].getTag('span')[0]
-            cur.addEventListener('click', (e) => {
-                if (moving == -1) {
-                    var cpath = e.composedPath()
-                    var label = cpath[0].parentElement;
-                    label.getTag('b')[0].classList = 'active';
-                    moving = Array.from(getClass('label')).indexOf(label)
-                } else {
-                    var cpath = e.composedPath()
-                    var label = cpath[0].parentElement;
-                    var tb = label.getTag('b')[0]
-                    var thisIndex = Array.from(getClass('label')).indexOf(label)
-                    var origEl = getClass('label')[moving]
-                    var ob = origEl.getTag('b')[0]
-                    if (thisIndex == moving) {
-                        origEl.getTag('b')[0].classList = '';
-                        moving = -1;
-                        return;
-                    }
-                    if (thisIndex % 2 != moving % 2) {
-                        origEl.getTag('b')[0].classList = '';
-                        alert('You cannot move people to the other side of the boat')
-                        moving = -1;
-                        return;
-                    }
-                    boatPos.swap(moving, thisIndex)
-                    ob.classList = '';
-                    ob.innerText = (boatPos[moving]=='SPACE')?'SPACE':`${boatPos[moving].n} (${boatPos[moving].w}kg)`;
-                    tb.innerText = (boatPos[thisIndex]=='SPACE')?'SPACE':`${boatPos[thisIndex].n} (${boatPos[thisIndex].w}kg)`;
-                    moving = -1;
-                }
-            })
-        }
+        updateBoats();
         function startAlg() {
             get('begin-btn').disabled = true;
-            for (let i = 0; i < parseInt(settings.boat.seats, 10) * 2; i++) {
-                boatPos[i] = 'SPACE';
-            }
-            sortLabels()
-            var b = algorithm.balance(weights, parseInt(settings.boat.seats, 10))
-            if (b == 'odd' || b == 'seats') {
-                if (b == 'odd') alert('The algorithm cannot balance if there is an odd quantity of people', 'error')
-                else alert('Not enough seats on the boat', 'error')
+            if (settings.boat == -1) {
+                alert('No boat selected');
                 get('begin-btn').disabled = false;
                 return false
             }
-            for (let i = 0; i < settings.boat.seats * 2; i++) {
+            for (let i = 0; i < parseInt(settings.boats[settings.boat].seats, 10) * 2; i++) {
+                boatPos[i] = 'SPACE';
+            }
+            sortLabels()
+            var b = algorithm.balance(weights, parseInt(settings.boats[settings.boat].seats, 10))
+            if (b == 'odd' || b == 'seats' || b == 'picky') {
+                if (b == 'odd') alert('The algorithm cannot balance if there is an odd quantity of people', 'error');
+                else if (b == 'seats') alert('Not enough seats on the boat', 'error');
+                else alert('Your paddlers are too picky! Too many have chosen one side, and there isn\'t enough people to put on the other side', 'error');
+                get('begin-btn').disabled = false;
+                return false
+            }
+            for (let i = 0; i < settings.boats[settings.boat].seats * 2; i++) {
                 getClass('label')[i].getTag('b')[0].innerText = 'SPACE';
             }
             for (let i = 0; i < b.closest.left.length; i++) {

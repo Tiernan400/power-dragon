@@ -19,13 +19,17 @@ if (!fs.existsSync(PATH.settings)) {
             server: false,
             enableHardwareAcceleration: true
         },
-        boat: {
-            seats: 10
-        }
+        boats: [],
+        boat: -1
     }))
 }
 if (!fs.existsSync(PATH.weights)) fs.writeFileSync(PATH.weights, JSON.stringify([]))
 let settings = JSON.parse(fs.readFileSync(PATH.settings))
+if (typeof settings.boat == 'object') {
+    settings.boats = new Array()
+    settings.boat = -1
+    fs.writeFileSync(PATH.settings, JSON.stringify(settings))
+}
 nativeTheme.themeSource = settings.personalisation.theme;
 if (settings.personalisation.enableHardwareAcceleration == false) app.disableHardwareAcceleration()
 
