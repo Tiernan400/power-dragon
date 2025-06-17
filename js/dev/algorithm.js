@@ -128,7 +128,7 @@ const algorithm = {
         algorithm.freeWeights = []
         algorithm.fixedLeft = []
         algorithm.fixedRight = []
-        ws = algorithm.weights;
+        var ws = algorithm.weights;
         for (let i = 0; i < ws.length; i++) {
             if (!ws[i].active) continue;
             if (ws[i].side == "left") {
@@ -142,6 +142,10 @@ const algorithm = {
         wLength = [...algorithm.fixedLeft, ...algorithm.fixedRight, ...algorithm.freeWeights].length;
         if (wLength % 2 == 1) return 'odd';
         else if (wLength > seats * 2) return 'seats';
+        else if (
+            ( algorithm.fixedLeft.length > algorithm.fixedRight.length + algorithm.freeWeights.length )
+            || ( algorithm.fixedRight.length > algorithm.fixedLeft.length + algorithm.freeWeights.length )
+        ) return 'picky';
         algorithm.splitArray(
             algorithm.freeWeights,
             algorithm.fixedLeft.length,
