@@ -45,10 +45,60 @@ menu.append(new MenuItem ({
     ]
 }))
 menu.append(new MenuItem ({
-    label: 'Add Person',
+    label: 'New',
+    submenu: [
+        new MenuItem ({
+            label: 'Person',
+            click() {
+                tab(get('weight-tab'))
+                addPerson(false)
+            }
+        }),
+        new MenuItem ({
+            label: 'Boat',
+            click() {
+                tab(get('boat-tab'))
+                addBoat(false)
+            }
+        })
+    ]
+}))
+// menu.append(new MenuItem ({
+//     label: 'Dev Tools',
+//     click() {
+//         remote.getCurrentWindow().webContents.openDevTools();
+//     }
+// }))
+// menu.append(new MenuItem ({
+//     label: 'Reload',
+//     click() {
+//         remote.getCurrentWindow().reload();
+//     }
+// }))
+let boatclicked = -1;
+const editMenu = new Menu()
+editMenu.append(new MenuItem ({
+    label: 'Edit',
+    submenu: [
+        new MenuItem({
+            label: 'Boat Name',
+            click() {
+                ;
+            }
+        }),
+        new MenuItem({
+            label: 'No. of Seats',
+            click() {
+                ;
+            }
+        })
+    ]
+}))
+editMenu.append(new MenuItem({ type: 'separator' }))
+editMenu.append(new MenuItem({
+    label: 'Delete',
     click() {
-        tab(get('weight-tab'))
-        addPerson(false)
+        deleteBoat(boatclicked)
     }
 }))
 window.addEventListener('contextmenu', (e) => {

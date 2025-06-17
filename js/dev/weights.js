@@ -1,21 +1,5 @@
 window.settings = JSON.parse(file.get(PATH.settings));
 window.weights = JSON.parse(file.get(PATH.weights));
-weights = weights.sort(DynamicSort('name'))
-for (let i = 0; i < weights.length; i++) {
-    get('list').innerHTML += `<div>
-    <span>${weights[i].name}</span>
-    <span>${weights[i].weight}</span>
-    <span>
-        <select onchange="weights[${i}].side=this.value.toLowerCase();updateWeights();">
-            <option${(weights[i].side=='any')?' selected':''}>Any</option>
-            <option${(weights[i].side=='left')?' selected':''}>Left</option>
-            <option${(weights[i].side=='right')?' selected':''}>Right</option>
-        </select>
-    </span>
-    <span><input onchange="active(${i}, this)" name="person-check" type="checkbox"${weights[i].active&&' checked'}/></span>
-    <span><button style="background:red;border-radius:3px;" onclick="deleteWeight(${i});">Delete</button></span>
-</div>`;
-}
 if (settings.personalisation.startMaximised == false) {
     get('switch-maximise').click()
     menu.getMenuItemById("start-max").checked = false;
@@ -59,6 +43,7 @@ function updateWeights() {
     }
     get('balancer').getElementsByClassName('overlay')[0].style.display = 'flex';
 }
+updateWeights()
 function deleteWeight(i) {
     confirm("Are you sure that you want to delete "+weights[i].name+" from this list?", `(function(res) {
         if (res == 1) {
