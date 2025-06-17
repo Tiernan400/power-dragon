@@ -1,7 +1,7 @@
 const base64Img = require('base64-img')
 const os = require('os')
 const networkInterfaces = os.networkInterfaces();
-for (let i = 0; i < networkInterfaces.WiFi.length; i++) {
+if (networkInterfaces.WiFi) for (let i = 0; i < networkInterfaces.WiFi.length; i++) {
     if (networkInterfaces.WiFi[i].family != "IPv4") continue;
     else if (networkInterfaces.WiFi[i].address) window.ip = networkInterfaces.WiFi[i].address;
 }
