@@ -20,7 +20,7 @@ function updateBoats() {
         for (let i = 0; i < parseInt(settings.boats[settings.boat].seats, 10) * 2; i++) {
             if (i % 2) getClass('boat')[0].innerHTML += '<div class="part"></div>';
             boatPos[i] = 'SPACE';
-            get('boat-container').innerHTML += `<div class="label"><span>${i}</span><b></b></div>`;
+            get('boat-container').innerHTML += `<div class="label"><span>${i + 1}</span><b></b></div>`;
         }
         for (let i = 0; i < getClass('label').length; i++) {
             var cur = getClass('label')[i].getTag('span')[0]
