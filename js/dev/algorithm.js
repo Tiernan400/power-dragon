@@ -54,9 +54,9 @@ const algorithm = {
     },
     splitArray: (array, leftCertain, rightCertain, fullArray) => {
         var l = fullArray.length / 2;
-        var ll = l - leftCertain, rl = l + rightCertain;
+        var spacel = l - leftCertain, spacer = l - rightCertain, space = spacel > spacer ? spacel : spacer;
         var c = [], incomplete = true;
-        for (let i = 0; i < ll; i++) {
+        for (let i = 0; i < space; i++) {
             c.push(i)
         }
         while (incomplete) {

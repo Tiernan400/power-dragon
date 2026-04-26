@@ -79,6 +79,10 @@ function addBoat(complete = false) {
 get('modal-close').addEventListener('click', () => {
     get('add-modal').style.display = 'none';
 })
+get('boat-edit-modal').addEventListener('click', e => {
+    var a = get('boat-edit-modal')
+    if (e.target == a) a.style.display = 'none';
+})
 get('boat-modal-close').addEventListener('click', () => {
     get('add-boat-modal').style.display = 'none';
 })
