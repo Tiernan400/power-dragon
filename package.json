@@ -1,6 +1,6 @@
 {
   "name": "power-dragon",
-  "version": "1.3",
+  "version": "1.4.2",
   "description": "Balance any dragon boat as best as possible",
   "main": "main.js",
   "scripts": {
